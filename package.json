@@ -2,7 +2,7 @@
   "name": "react-lecture",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://CatarinaLeon.github.io/react-university-rest-api",
+  "homepage": "https://CatarinaLeon.github.io/react-university-05-rest-api",
   "dependencies": {
     "@emotion/react": "^11.7.0",
     "@testing-library/jest-dom": "^5.16.1",
