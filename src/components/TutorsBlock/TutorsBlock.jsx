@@ -1,92 +1,161 @@
 /** @jsxImportSource @emotion/react */
 import { Component } from 'react';
-
-import PropTypes from 'prop-types';
+import BigButton from '../common/BigButton/BigButton';
+import ErrorMsg from '../common/ErrorMsg/ErrorMsg';
+import Loader from '../common/Loader/Loader';
+import Paper from '../common/Paper/Paper';
+import Skeleton from '../common/Skeleton/Skeleton';
 import Tutor from './Tutor/Tutor';
 import TutorForm from './TutorForm/TutorForm';
-import BigButton from '../common/BigButton/BigButton';
-import Paper from '../common/Paper/Paper';
+import * as api from '../../services/api';
 import plusImg from '../../images/add.svg';
 
-/**
- * Добавим коммент из документации
- * В пропе css у верхнего дива пропишем два css правила:
- * { position: relative; margin-bottom: 32px }
- * в стиле объекта
- * Также на каждую лишку { margin-bottom: 24px }
- */
+const API_ENDPOINT = 'tutors';
 
 class TutorsBlock extends Component {
   state = {
-    tutors: this.props.tutors,
+    tutors: [],
     isFormOpen: false,
+    newTutor: null,
+    loading: false,
+    error: null,
+    firstLoading: false,
   };
 
+  isTutorsMounted = false;
+  controller = new AbortController();
+  signal = this.controller.signal;
+
+  componentDidMount() {
+    this.isTutorsMounted = true;
+
+    this.setState({ firstLoading: true });
+    this.fetchTutors().finally(() => this.setState({ firstLoading: false }));
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { newTutor } = this.state;
+    // если предыдущее состояние не равно null и при этом предыдущее состояние не равно текущему
+    if (newTutor && prevState.newTutor !== newTutor) {
+      // то вызываем асинхронную функцию( запрос на api)
+      this.addTutor();
+    }
+  }
+
+  componentWillUnmount() {
+    this.isTutorsMounted = false;
+
+    if (this.controller) {
+      this.controller.abort();
+    }
+  }
+
+  // // FETCH TUTORS -> ф-ция делает запрос на api и возвращает массив tuturs
+  fetchTutors = async () => {
+    this.createSignalAndController();
+    const signal = { signal: this.signal };
+
+    this.setState({ loading: true, error: null });
+    try {
+      const tutors = await api.getData(API_ENDPOINT, signal);
+      // записываем в стейт
+      this.setState({ tutors });
+    } catch (error) {
+      if (!this.signal.aborted) {
+        this.setState({ error: error.message });
+      }
+    } finally {
+      if (!this.signal.aborted) {
+        this.setState({ loading: false });
+      }
+    }
+  };
+
+  // ADD TUTOR
   toggleForm = () =>
     this.setState(prevState => ({
       // console.log('prevState', prevState);
       isFormOpen: !prevState.isFormOpen,
+      // так плохо! -> this.setState({ isFormOpen: !this.state.isFormOpen });
     }));
-  // так плохо! -> this.setState({ isFormOpen: !this.state.isFormOpen });
+
+  // подтверждение того что добав newTutur в state
+  confirmAdd = newTutur => {
+    this.setState({ newTutur });
+  };
 
   // Добавить нового преподавателя в массив: распылить старый и добавить новый ->
-  addTutor = newTutor =>
-    this.setState(prevState => ({
-      tutors: [...prevState.tutors, newTutor],
-      isFormOpen: false,
-    }));
+  addTutor = async () => {
+    this.setState({ loading: true, error: null });
+    const { newTutor } = this.state;
+    try {
+      const savedTutor = await api.saveItem(API_ENDPOINT, newTutor);
+      if (this.isTutorsMounted) {
+        this.setState(prevState => ({
+          tutors: [...prevState.tutors, savedTutor],
+          // закрыть форму
+          isFormOpen: false,
+          // очистить поле, чтобы можно было добавит нового препод
+          newTutor: null,
+        }));
+      }
+    } catch (error) {
+      if (this.isTutorsMounted) {
+        this.setState({ error: error.message });
+      }
+    } finally {
+      if (this.isTutorsMounted) {
+        this.setState({ loading: false });
+      }
+    }
+  };
+
+  // CREATE ABORT CONTROLLER
+  createSignalAndController = () => {
+    if (this.controller) {
+      this.controller.abort();
+    }
+    this.controller = new AbortController();
+    this.signal = this.controller.signal;
+  };
 
   render() {
-    const { tutors, isFormOpen } = this.state;
+    const { tutors, isFormOpen, loading, error, firstLoading } = this.state;
+    const noTutors = !firstLoading && !tutors.length;
     return (
-      <div css={{ position: 'relative', marginBottom: 32 }}>
-        <ul>
-          {tutors.map(tutor => (
-            <li key={tutor.email} css={{ marginBottom: 24 }}>
-              <Paper>
-                <Tutor {...tutor} />
-              </Paper>
-            </li>
-          ))}
-        </ul>
+      <>
+        {firstLoading && <Skeleton />}
 
-        {isFormOpen && <TutorForm onSubmit={this.addTutor} />}
+        {loading && <Loader />}
+
+        {!!tutors.length && (
+          <ul>
+            {tutors.map(tutor => (
+              <li key={tutor.id} css={{ marginBottom: 24 }}>
+                <Paper>
+                  <Tutor {...tutor} />
+                </Paper>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {noTutors && <h4 className="absence-msg">No tutors yet</h4>}
+
+        {isFormOpen && <TutorForm onSubmit={this.confirmAdd} />}
+
+        {error && <ErrorMsg message={error} />}
 
         <BigButton
           onClick={this.toggleForm}
           // onClick={this.addTutor}
           icon={!isFormOpen && plusImg}
           text={isFormOpen ? 'Отменить добавление' : 'Добавить преподавателя'}
-          // text="Добавить преподавателя"
+          disabled={loading}
         />
-      </div>
+      </>
     );
   }
 }
-
-// const TutorsBlock = ({ tutors }) => {
-//   //tutors=[] Дефолтное значение
-//   return (
-//     <div css={{ position: 'relative', marginBottom: 32 }}>
-//       <ul>
-//         {tutors.map(tutor => (
-//           <li key={tutor.email} css={{ marginBottom: 24 }}>
-//             <Paper>
-//               <Tutor {...tutor} />
-
-//             </Paper>
-//           </li>
-//         ))}
-//       </ul>
-//       <BigButton icon={plusImg} text="Добавить преподавателя" />
-//     </div>
-//   );
-// };
-
-TutorsBlock.propTypes = {
-  tutors: PropTypes.arrayOf(
-    PropTypes.shape({ email: PropTypes.string.isRequired }),
-  ).isRequired,
-};
 
 export default TutorsBlock;

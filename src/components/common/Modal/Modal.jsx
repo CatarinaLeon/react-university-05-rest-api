@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import styles from './Modal.module.css';
 
 const modalRootRef = document.querySelector('#modal-root');
-console.log(createPortal);
+// console.log(createPortal);
 
 class Modal extends Component {
   // закрытие модалки по Esc

@@ -5,14 +5,6 @@ import { ReactComponent as PhoneIcon } from 'images/phone.svg';
 import { ReactComponent as MailIcon } from 'images/mail.svg';
 import { ReactComponent as LocationIcon } from 'images/location.svg';
 
-/**
- * Добавим коммент из документации
- * Перепишем scss стили в переменные
- * blockStyles, nameStyles, dataStyles, dataTextStyles
- * в стиле объекта
- * Переменные используем в пропах css соответствующих элементов
- */
-
 const blockStyles = {
   display: 'flex',
   padding: 14,

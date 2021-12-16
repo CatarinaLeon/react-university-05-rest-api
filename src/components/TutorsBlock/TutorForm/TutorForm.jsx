@@ -4,14 +4,6 @@ import BigButton from '../../common/BigButton/BigButton';
 import Paper from '../../common/Paper/Paper';
 import s from './TutorForm.module.css';
 
-/**
-  - в форме-классе с одним пропом onSubmit создаем стейт с изначальным состоянием каждого инпута ("")
-  - пишем универсальный метод `handleChange` для измненения состояния по событию в инпут и передаем его обработчиком в onChange каждого инпута
-  - пишем метод `handleSubmit`, в котором вызываем метод `this.props.onSubmit`, передавая ему текущее состояние и очищаем форму
-  - очистку формы вынесем в отдельный метод `reset` (использовать `INITIAL_STATE`)
-  - в методе render деструктурируем все поля стейта и передаем их как значения инпутов в поле value
-  - в методе render создаем переменую isAddBtnDisabled, которая будет служить значение поля disabled в BigButton, значение переменной будет true, только если все поля формы будут заполнены
- */
 const citiesOptions = [
   {
     label: 'Выберите город*',
@@ -33,10 +25,10 @@ const GENDER = {
 };
 
 const INITIAL_STATE = {
-  lastName: '',
-  firstName: '',
-  phone: '',
-  email: '',
+  // lastName: '',
+  // firstName: '',
+  // phone: '',
+  // email: '',
   isFullTime: false, // checkbox
   city: '', // select
   gender: '', // radio
@@ -67,31 +59,12 @@ class TutorForm extends Component {
   };
 
   render() {
-    const { lastName, firstName, phone, email, isFullTime, city, gender } =
-      this.state;
+    // lastName, firstName, phone, email,
+    const { isFullTime, city, gender } = this.state;
 
-    // Блокирование кнопки ПРИГЛАСИТЬ, если форма не заполнена (4 варианта)
-
-    // const isSubmitBtnDisabled = Object.keys(this.state).some(inputName =>
-    //   inputName !== 'isFullTime' && !this.state[inputName])
-
-    // const isSubmitBtnDisabled = Object.keys(this.state).some(inputName => {
-    //   if (inputName === 'isFullTime') {
-    //     return false;
-    //   }
-    //   return !this.state[inputName];
-    // })
-
-    // const isSubmitBtnDisabled = Object.values(this.state).some(
-    //   value => typeof value !== 'boolean' && !value,
-    // );
-
-    const isSubmitBtnDisabled = Object.values(this.state).some(value => {
-      if (typeof value === 'boolean') {
-        return false;
-      }
-      return !value;
-    });
+    const isSubmitBtnDisabled = Object.values(this.state).some(
+      value => typeof value !== 'boolean' && !value,
+    );
 
     return (
       <div className={s.container}>
@@ -99,7 +72,7 @@ class TutorForm extends Component {
           <div className={s.inner}>
             <h4 className={s.formName}>Добавление преподавателя</h4>
             <form onSubmit={this.handleSubmit}>
-              <input
+              {/* <input
                 name="lastName"
                 value={lastName}
                 type="text"
@@ -130,7 +103,7 @@ class TutorForm extends Component {
                 placeholder="Email*"
                 required
                 onChange={this.handleChange}
-              />
+              /> */}
               <select
                 name="city"
                 value={city}

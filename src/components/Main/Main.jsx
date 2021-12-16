@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Section from '../common/Section/Section';
 import Header from '../Header/Header';
 import UniversityBlock from '../UniversityBlock/UniversityBlock';
@@ -13,25 +14,36 @@ import departmentsIcon from '../../images/robot.png';
 
 import s from './Main.module.css';
 
-const { name, description, tutors, cities, departments } = univerInfo;
+const { name, description } = univerInfo;
 
 const Main = () => {
+  const [showTutots, setShowTutots] = useState(true); // ВРЕМЕННЫЙ
   return (
     <main className={s.main}>
       <Header title="Информация о университете" />
 
       <UniversityBlock name={name} descr={description} />
 
-      <Section icon={tutorsIcon} title="Преподаватели">
-        <TutorsBlock tutors={tutors} />
-      </Section>
+      {/* ВРЕМЕННAЯ КНОПКА */}
+      <button
+        style={{ padding: 10, display: 'none' }}
+        onClick={() => setShowTutots(!showTutots)}
+      >
+        Toggle tutors
+      </button>
+
+      {showTutots && (
+        <Section icon={tutorsIcon} title="Преподаватели">
+          <TutorsBlock />
+        </Section>
+      )}
 
       <Section icon={citiesIcon} title="Города">
-        <CitiesBlock cities={cities} />
+        <CitiesBlock />
       </Section>
 
       <Section icon={departmentsIcon} title="Факультеты">
-        <DepartmentsBlock departments={departments} />
+        <DepartmentsBlock />
       </Section>
     </main>
   );
